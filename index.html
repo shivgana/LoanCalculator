@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Loan Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 10px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+		div {
+			margin: 0;
+		}
+        .form-section {
+            display: flex;
+            justify-content: space-between;
+            position: -webkit-sticky; /* Safari */
+            position: sticky;
+            top: 0;
+            background-color: #fff;
+            padding: 20px;
+            border-bottom: 1px solid #ccc;
+            z-index: 1000;
+        }
+        .form-column {
+            flex: 1;
+            margin: 0 10px;
+        }
+		.form-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .form-row label {
+            flex: 0 0 50%;
+            margin-right: 5px;
+        }
+        .form-row input {
+            flex: 1;
+        }
+        input, label, button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+			height: 24px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 1.8px;
+			background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(28px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Loan Details</h2>
+		<div class="form-section">
+            <div class="form-column">
+                <div class="form-row">
+                    <label for="home-amount">Home Amount</label>
+                    <input type="number" id="home-amount" required>
+                </div>
+                
+                <div class="form-row">
+                    <label for="tenure">Tenure (years)</label>
+                    <input type="number" id="tenure" required>
+                </div>
+                <div class="form-row">
+                    <label for="interest-rate">Interest Rate (%)</label>
+                    <input type="number" step="0.01" id="interest-rate" required>
+                </div>
+            </div>
+            <div class="form-column">
+                <div class="form-row">
+                    <label for="down-payment">Down Payment</label>
+                    <input type="number" id="down-payment" required>
+                </div>
+				<div class="form-row">
+					<label for="rental-income">Annual Rental Income</label>
+					<input type="number" id="rental-income" required>
+				</div>
+				<div class="form-row">
+                    <label for="monthly-salary">Monthly Salary</label>
+                    <input type="number" id="monthly-salary" required>
+                </div>
+            </div>
+            <div class="form-column">
+				<div class="form-row">
+					<label for="use-savings">Use Savings</label>
+					<label class="toggle-switch"style="flex: 0 0 15%;">
+						<input type="checkbox" id="use-savings">
+						<span class="slider"></span>
+					</label>
+				</div>
+				<div class="form-row">
+					<label for="use-rent-income">Use Rental Income</label>
+					<label class="toggle-switch" style="flex: 0 0 15%;">
+						<input type="checkbox" id="use-rent-income">
+						<span class="slider"></span>
+					</label>
+				</div>
+				<button type="button" onclick="calculateLoan()">Calculate Loan</button>
+            </div>
+        </div>
+        
+        <h2>Monthly Payment Schedule</h2>
+        <table id="payment-schedule">
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Loan Amount (before)</th>
+                    <th>EMI</th>
+                    <th>Principal</th>
+                    <th>Interest</th>
+                    <th>Loan Amount (after)</th>
+                    <th>Monthly Salary</th>
+                    <th>Balance Salary (after EMI)</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        function calculateLoan() {
+            // Get input values
+            const homeAmount = parseFloat(document.getElementById('home-amount').value);
+            const downPayment = parseFloat(document.getElementById('down-payment').value);
+            const tenure = parseFloat(document.getElementById('tenure').value);
+            const interestRate = parseFloat(document.getElementById('interest-rate').value);
+            const monthlySalary = parseFloat(document.getElementById('monthly-salary').value);
+            const annualRentalIncome = parseFloat(document.getElementById('rental-income').value);
+            const useRentIncome = document.getElementById('use-rent-income').checked;
+            const useSavings = document.getElementById('use-savings').checked;
+            
+            // Calculate loan amount
+            const loanAmount = homeAmount - downPayment;
+            
+            // Monthly interest rate
+            const monthlyInterestRate = interestRate / 100 / 12;
+            
+            // Number of monthly payments
+            const numberOfPayments = tenure * 12;
+            
+            // Monthly payment calculation (using formula for annuity)
+            const monthlyPayment = (loanAmount * monthlyInterestRate) / 
+                                   (1 - Math.pow(1 + monthlyInterestRate, -numberOfPayments));
+            
+            // Get table body
+            const tableBody = document.getElementById('payment-schedule').querySelector('tbody');
+            
+            // Clear existing table rows
+            tableBody.innerHTML = '';
+            
+            let remainingLoan = loanAmount;
+            let balanceSalary = 0;
+            let previousBalanceSalary = 0;
+			let previousMonth = 1;
+            let monthlyInterest, monthlyPrincipal;
+            
+            // Add monthly payments to table
+            for (let month = 1; month <= numberOfPayments; month++) {
+                monthlyInterest = remainingLoan * monthlyInterestRate;
+                monthlyPrincipal = monthlyPayment - monthlyInterest;
+                remainingLoan -= monthlyPrincipal;
+                if (month % 3 === 0 ){
+					monthlySalary 
+				}
+                // Annual adjustments
+                if (previousMonth % 12 === 0) {
+                    if (useRentIncome) {
+                        remainingLoan -= annualRentalIncome;
+                    }
+                    if (useSavings) {
+                        remainingLoan -= previousBalanceSalary;
+                        balanceSalary = 0;
+                    }
+                }
+                
+                const row = tableBody.insertRow();
+                const cell1 = row.insertCell(0);
+                const cell2 = row.insertCell(1);
+                const cell3 = row.insertCell(2);
+                const cell4 = row.insertCell(3);
+                const cell5 = row.insertCell(4);
+                const cell6 = row.insertCell(5);
+                const cell7 = row.insertCell(6);
+                const cell8 = row.insertCell(7);
+                
+                cell1.textContent = month;
+                cell2.textContent = (remainingLoan + monthlyPrincipal).toFixed(2);
+                cell3.textContent = monthlyPayment.toFixed(2);
+                cell4.textContent = monthlyPrincipal.toFixed(2);
+                cell5.textContent = monthlyInterest.toFixed(2);
+                cell6.textContent = remainingLoan.toFixed(2);
+                cell7.textContent = monthlySalary.toFixed(2);
+                balanceSalary += monthlySalary - monthlyPayment;
+				cell8.textContent = balanceSalary.toFixed(2);
+				previousMonth = month;
+				previousBalanceSalary = balanceSalary;
+            }
+        }
+    </script>
+</body>
+</html>
