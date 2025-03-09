@@ -155,6 +155,7 @@
         </div>
         
         <h2>Monthly Payment Schedule</h2>
+        <p id="summary"></p>
         <table id="payment-schedule">
             <thead>
                 <tr>
@@ -197,6 +198,8 @@
             const monthlyPayment = (loanAmount * monthlyInterestRate) / 
                                    (1 - Math.pow(1 + monthlyInterestRate, -numberOfPayments));
             
+            const summary = document.getElementById('summary');
+            
             // Get table body
             const tableBody = document.getElementById('payment-schedule').querySelector('tbody');
             
@@ -227,6 +230,9 @@
                         balanceSalary = 0;
                     }
                 }
+                if ((remainingLoan + monthlyPrincipal) < 0) {
+                    break;
+                }
                 
                 const row = tableBody.insertRow();
                 const cell1 = row.insertCell(0);
@@ -249,7 +255,12 @@
 				cell8.textContent = balanceSalary.toFixed(2);
 				previousMonth = month;
 				previousBalanceSalary = balanceSalary;
+                
             }
+            let years = Math.floor(previousMonth / 12);
+            let remainingMonths = previousMonth % 12;
+            summary.innerText = `Total of ${years} years and ${remainingMonths} months to close the loan`;
+                    
         }
     </script>
 </body>
